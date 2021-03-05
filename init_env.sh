@@ -7,6 +7,3 @@ cd /home/jovyan/work/
 # even when authenticating via HTTPS
 git config --global user.email anon@anon.noo
 git config --global user.name anon
-
-# Initiate JupyterLab build
-jupyter lab build
