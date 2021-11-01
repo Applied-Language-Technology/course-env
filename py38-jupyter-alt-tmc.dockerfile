@@ -6,6 +6,7 @@ USER $NB_USER
 # Set environments for TMC
 ENV TMC_DIR=/opt/tmc/
 ENV TMC_CONFIG_DIR="${HOME}/tmc-config/tmc-tmc_cli_rust"
+ENV WORK_DIR=/home/$NB_USER/work/
 
 # Copy the requirements.txt file from pip to /opt/app
 COPY requirements.txt /opt/app/requirements.txt
@@ -25,6 +26,9 @@ USER root
 
 # Update packages and install Python
 RUN apt update && apt install python-pkg-resources
+
+# Set working directory to /opt/tmc
+WORKDIR /opt/tmc
 
 # Install TMC
 RUN apt-get install -y --no-install-recommends curl \
@@ -56,7 +60,7 @@ COPY scripts/jupyter/autodownload_and_start.sh /usr/local/bin/autodownload_and_s
 RUN mkdir -p /home/jovyan/work \
     && sed -i "s/#c.NotebookApp.notebook_dir =.*/c.NotebookApp.notebook_dir = '\/home\/jovyan\/work\/'/g" /home/jovyan/.jupyter/jupyter_notebook_config.py \
     && chmod a+x /usr/local/bin/autodownload_and_start.sh \
-    && chmod a+x /opt/app/tmc-cli-rust-*
+    && chmod a+x /opt/tmc/tmc-cli-rust-*
 
 # Change to non-root user
 USER 1000
