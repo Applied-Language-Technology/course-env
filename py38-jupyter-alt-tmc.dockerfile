@@ -14,6 +14,12 @@ COPY requirements.txt /opt/app/requirements.txt
 # Set working directory to /opt/app
 WORKDIR /opt/app
 
+# Switch to root and install G++
+USER root
+RUN apt-get update \
+	&& apt-get install -y g++
+USER $NB_USER
+
 # Upgrade pip and setuptools; install libraries from requirements.txt;
 # change permissions.
 RUN pip install --upgrade pip \
