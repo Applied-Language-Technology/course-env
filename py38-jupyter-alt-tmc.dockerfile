@@ -19,7 +19,7 @@ USER root
 
 RUN apt-get update \
     && chgrp -R root /opt/conda \
-	&& apt-get install -y g++ \
+    && apt-get install -y g++ \
     # Update packages and install Python
     && apt update && apt install python-pkg-resources \
     # Install TMC
