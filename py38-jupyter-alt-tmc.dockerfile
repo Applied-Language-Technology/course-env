@@ -11,33 +11,19 @@ ENV WORK_DIR=/home/$NB_USER/work/
 # Copy the requirements.txt file from pip to /opt/app
 COPY requirements.txt /opt/app/requirements.txt
 
-# Set working directory to /opt/app
-WORKDIR /opt/app
-
-# Switch to root and install G++
-USER root
-RUN apt-get update \
-	&& apt-get install -y g++
-USER $NB_USER
-
-# Upgrade pip and setuptools; install libraries from requirements.txt;
-# change permissions.
-RUN pip install --upgrade pip \
-	&& pip install --upgrade setuptools \
-	&& pip install wheel \
-	&& pip install -r requirements.txt
-
-# Switch to root
-USER root
-
-# Update packages and install Python
-RUN apt update && apt install python-pkg-resources
-
 # Set working directory to /opt/tmc
 WORKDIR /opt/tmc
 
-# Install TMC
-RUN apt-get install -y --no-install-recommends curl \
+# Switch to root and install G++
+USER root
+
+RUN apt-get update \
+    && chgrp -R root /opt/conda \
+    && apt-get install -y g++ \
+    # Update packages and install Python
+    && apt update && apt install python-pkg-resources \
+    # Install TMC
+    && apt-get install -y --no-install-recommends curl \
     && curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash -s x86_64 linux \
     # Set download location for exercises
     && mkdir -p "${TMC_DIR}" \
@@ -48,13 +34,30 @@ RUN apt-get install -y --no-install-recommends curl \
     && apt-get purge -y --auto-remove curl \
     && apt-get clean
 
+# Set working directory to /opt/app
+WORKDIR /opt/app
+
+USER $NB_USER
+
+# Upgrade pip and setuptools; install libraries from requirements.txt;
+# change permissions.
+RUN pip install  --no-cache-dir --upgrade pip \
+	&& pip install  --no-cache-dir  --upgrade setuptools \
+	&& pip install  --no-cache-dir  wheel \
+	&& pip install  --no-cache-dir -r requirements.txt \
+    && find /opt/conda -type d -exec chmod g+rwx,o+rx {} \; \
+    && find /opt/conda -type f -exec chmod g+rw {} \;
+
+# Switch to root
+USER root
+
+# Set working directory to /opt/tmc
+WORKDIR /opt/tmc
+
 # Fix permissions
 RUN chgrp -R root /home/$NB_USER \ 
     && find /home/$NB_USER -type d -exec chmod g+rwx,o+rx {} \; \
-    && find /home/$NB_USER -type f -exec chmod g+rw {} \; \
-    && chgrp -R root /opt/conda \
-    && find /opt/conda -type d -exec chmod g+rwx,o+rx {} \; \
-    && find /opt/conda -type f -exec chmod g+rw {} \;
+    && find /home/$NB_USER -type f -exec chmod g+rw {} \;
 
 # Set home
 ENV HOME /home/$NB_USER
